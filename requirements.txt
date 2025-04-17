@@ -1,0 +1,5 @@
+diffusers
+transformers
+accelerate
+huggingface_hub
+hf_xet
