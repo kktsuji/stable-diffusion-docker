@@ -1,8 +1,15 @@
 import torch
 from diffusers import StableDiffusionPipeline
+from huggingface_hub import snapshot_download
 
+# Download the pretrained model from Hugging Face Hub
+repo_id = "CompVis/stable-diffusion-v1-4"
+local_model_path = f"./models/{repo_id}"
+snapshot_download(repo_id=repo_id, local_dir=local_model_path)
+
+# Load the model from the local path
 pipe = StableDiffusionPipeline.from_pretrained(
-    "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
+    local_model_path, torch_dtype=torch.float16
 )
 pipe = pipe.to("cuda")
 
