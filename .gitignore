@@ -196,3 +196,6 @@ pyrightconfig.json
 
 out/
 models/
+data/
+peft/
+loras/

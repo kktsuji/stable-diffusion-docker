@@ -24,5 +24,5 @@ docker run --rm -it --gpus all -v $PWD:/work -w /work kktsuji/stable-diffusion-c
 Execute the python script on the container with GPU.
 
 ```bash
-docker run --rm -it --gpus all -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python main.py
+docker run --rm -it --gpus all -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python train_lora.py
 ```
