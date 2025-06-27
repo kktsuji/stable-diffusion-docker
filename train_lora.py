@@ -1,13 +1,14 @@
 import os
 
-# RESOLUTION = "40" # original size
+RESOLUTION = "40"  # original size
 # RESOLUTION = "256"
-RESOLUTION = "512"  # recommended for sd-1.x
+# RESOLUTION = "512"  # recommended for sd-1.x
 
-OUT_DIR_NAME = f"250622_cell_rois_lora_size-{RESOLUTION}"  # Edit
+OUT_DIR_NAME = f"cell_rois_lora_size-{RESOLUTION}"  # Edit
 OUT_DIR_PATH = f"./loras/{OUT_DIR_NAME}/"
 if not os.path.exists(OUT_DIR_PATH):
     os.makedirs(OUT_DIR_PATH)
+    os.makedirs(OUT_DIR_PATH + "logs")
 print(OUT_DIR_PATH, os.path.exists(OUT_DIR_PATH))
 
 BASE_DATA_DIR_PATH = "./data/pseudo_rgb/"
@@ -72,6 +73,10 @@ input_args = [
     "5",
     "--learning_rate",
     "1e-4",
+    "--logging_dir",
+    "logs",
+    "--report_to",
+    "tensorboard",
     "lora",
     "--unet_r",
     "16",
