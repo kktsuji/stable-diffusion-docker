@@ -1,7 +1,9 @@
 diffusers
+torchvision
 transformers
 accelerate
 huggingface_hub
 hf_xet
 peft
 datasets
+matplotlib
