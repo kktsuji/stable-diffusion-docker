@@ -6,7 +6,7 @@ import os
 
 RESOLUTION = 512
 
-lora_dir_name = f"cell_rois_lora_size-{RESOLUTION}_target-module"  # Edit
+lora_dir_name = f"cell-rois_lora_size-{RESOLUTION}_target-module"  # Edit
 lora_path = f"/content/drive/MyDrive/Research/LoRAs/{lora_dir_name}/unet/"
 print(lora_path, os.path.exists(lora_path))
 

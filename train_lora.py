@@ -4,7 +4,7 @@ RESOLUTION = "40"  # original size
 # RESOLUTION = "256"
 # RESOLUTION = "512"  # recommended for sd-1.x
 
-out_dir_name = f"cell_rois_lora_size-{RESOLUTION}"  # Edit
+out_dir_name = f"cell-rois_lora_size-{RESOLUTION}"  # Edit
 out_dir_path = f"./loras/{out_dir_name}/"
 if not os.path.exists(out_dir_path):
     os.makedirs(out_dir_path)
