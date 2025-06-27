@@ -21,8 +21,15 @@ Create a python virtual environment and install the required packages.
 docker run --rm -it --gpus all -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 bash ./setup-python-env.sh
 ```
 
+Clone the repository.
+
+```bash
+git clone -b develop https://github.com/kktsuji/peft.git
+```
+
 Execute the python script on the container with GPU.
 
 ```bash
 docker run --rm -it --gpus all -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python train_lora.py
+docker run --rm -it --gpus all -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python generate_images.py
 ```
