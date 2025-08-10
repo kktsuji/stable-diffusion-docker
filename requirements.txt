@@ -7,3 +7,5 @@ hf_xet
 peft
 datasets
 matplotlib
+timm
+Pillow
