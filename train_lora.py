@@ -16,6 +16,13 @@ print(base_data_dir_path, os.path.exists(base_data_dir_path))
 
 model_id = "CompVis/stable-diffusion-v1-4"
 model_dir_path = "./models/" + model_id
+if not os.path.exists(model_dir_path):
+    from diffusers import StableDiffusionPipeline
+    import torch
+
+    os.makedirs(model_dir_path)
+    pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float32)
+    pipe.save_pretrained(model_dir_path)
 print(model_dir_path, os.path.exists(model_dir_path))
 
 import sys
