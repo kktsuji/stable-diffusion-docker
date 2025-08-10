@@ -216,5 +216,65 @@ def main():
         print(f"Error: {args.image_path} is not a valid file or directory")
 
 
+def run_classification(image_path, model="resnet50", top_k=5, use_gpu=True):
+    """
+    Run image classification with manual parameters (no argparse).
+
+    Args:
+        image_path (str): Path to image file or directory
+        model (str): Model name ('resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152')
+        top_k (int): Number of top predictions to show
+        use_gpu (bool): Whether to use GPU if available
+    """
+    # Initialize classifier
+    classifier = ImageClassifier(model_name=model, use_gpu=use_gpu)
+
+    # Check if input is a file or directory
+    if os.path.isfile(image_path):
+        # Single image
+        print(f"Analyzing image: {image_path}")
+        try:
+            predictions = classifier.predict(image_path, top_k)
+            print(f"\nTop {top_k} predictions:")
+            for i, (class_name, confidence) in enumerate(predictions, 1):
+                print(f"{i}. {class_name}: {confidence:.4f} ({confidence*100:.2f}%)")
+        except Exception as e:
+            print(f"Error: {e}")
+
+    elif os.path.isdir(image_path):
+        # Directory of images
+        image_extensions = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
+        image_files = [
+            os.path.join(image_path, f)
+            for f in os.listdir(image_path)
+            if os.path.splitext(f.lower())[1] in image_extensions
+        ]
+
+        if not image_files:
+            print(f"No image files found in {image_path}")
+            return
+
+        print(f"Found {len(image_files)} images in {image_path}")
+        results = classifier.predict_batch(image_files, top_k)
+
+        for image_path, predictions in results.items():
+            print(f"\n--- {os.path.basename(image_path)} ---")
+            if predictions:
+                for i, (class_name, confidence) in enumerate(predictions, 1):
+                    print(
+                        f"{i}. {class_name}: {confidence:.4f} ({confidence*100:.2f}%)"
+                    )
+            else:
+                print("Failed to process this image")
+
+    else:
+        print(f"Error: {image_path} is not a valid file or directory")
+
+
 if __name__ == "__main__":
-    main()
+    run_classification(
+        image_path="data/human/a-girl_masterpiece_street_casual-cloth_cool_human_upper-body.png",
+        model="resnet50",
+        top_k=3,
+        use_gpu=True,
+    )
