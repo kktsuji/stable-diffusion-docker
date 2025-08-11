@@ -172,6 +172,44 @@ class ResNetWithNewClasses:
 
         self.model.forward = forward_dual_heads
 
+    def new_classes_only(self, num_new_classes):
+        """
+        Approach 3: Replace classifier with one that only handles new classes.
+        Original ImageNet classes are discarded.
+
+        Args:
+            num_new_classes (int): Number of new classes to classify
+        """
+        print(f"Replacing classifier to handle only {num_new_classes} new classes")
+
+        # Get the feature dimension
+        if hasattr(self.model, "fc"):
+            feature_dim = self.model.fc.in_features
+            # Replace with new classifier for new classes only
+            self.model.fc = nn.Linear(feature_dim, num_new_classes)
+        elif hasattr(self.model, "classifier"):
+            feature_dim = self.model.classifier.in_features
+            self.model.classifier = nn.Linear(feature_dim, num_new_classes)
+        elif hasattr(self.model, "head"):
+            feature_dim = self.model.head.in_features
+            self.model.head = nn.Linear(feature_dim, num_new_classes)
+        else:
+            raise ValueError("Could not find classifier layer")
+
+        # Initialize weights with small random values
+        with torch.no_grad():
+            if hasattr(self.model, "fc"):
+                nn.init.normal_(self.model.fc.weight, std=0.01)
+                nn.init.constant_(self.model.fc.bias, 0)
+            elif hasattr(self.model, "classifier"):
+                nn.init.normal_(self.model.classifier.weight, std=0.01)
+                nn.init.constant_(self.model.classifier.bias, 0)
+            elif hasattr(self.model, "head"):
+                nn.init.normal_(self.model.head.weight, std=0.01)
+                nn.init.constant_(self.model.head.bias, 0)
+
+        print(f"New classifier initialized with {num_new_classes} output classes")
+
     def freeze_backbone(self, freeze=True):
         """
         Freeze or unfreeze the backbone (feature extraction layers).
@@ -418,6 +456,19 @@ def example_usage():
         new_num_classes=1003,  # Add 3 new classes
     )
     dual_model.approach_2_dual_heads()
+
+    # Example 4: New classes only (discard original ImageNet classes)
+    print("\n4. New classes only approach...")
+    new_only_model = ResNetWithNewClasses(
+        base_model_name="resnet50",
+        original_num_classes=1000,
+        new_num_classes=None,  # Don't extend in init
+        use_lora=False,
+    )
+    # Replace classifier to handle only 5 custom classes
+    new_only_model.new_classes_only(num_new_classes=5)
+    # Freeze backbone for transfer learning
+    new_only_model.freeze_backbone(freeze=True)
 
     print("\nAll examples completed successfully!")
 

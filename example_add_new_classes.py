@@ -133,6 +133,54 @@ def approach_3_dual_heads():
     return model
 
 
+def approach_4_new_classes_only():
+    """
+    Approach 4: New classes only (discard original ImageNet classes)
+    - Replace classifier to handle only your custom classes
+    - No ImageNet classes, much smaller and more efficient
+    - Best for: Specific tasks where ImageNet classes are not needed
+    """
+    print("\n" + "=" * 60)
+    print("APPROACH 4: New Classes Only (Discard ImageNet)")
+    print("=" * 60)
+
+    # Create model without extending the classifier initially
+    model = ResNetWithNewClasses(
+        base_model_name="resnet50",
+        original_num_classes=1000,
+        new_num_classes=None,  # Don't extend in init
+        use_lora=False,
+    )
+
+    # Replace classifier to handle only 5 custom classes
+    model.new_classes_only(num_new_classes=5)
+
+    # Freeze backbone for transfer learning
+    model.freeze_backbone(freeze=True)
+
+    # Get optimizer
+    optimizer = model.get_optimizer(learning_rate=1e-3)
+
+    print("✓ New classes only model ready!")
+    print(f"✓ Original ImageNet classes: DISCARDED")
+    print(f"✓ New custom classes: 5 classes (0-4)")
+    print(f"✓ Model size: Much smaller and more efficient")
+    print(f"✓ Class mapping:")
+    print(f"   - Class 0: Your custom class 1")
+    print(f"   - Class 1: Your custom class 2")
+    print(f"   - Class 2: Your custom class 3")
+    print(f"   - Class 3: Your custom class 4")
+    print(f"   - Class 4: Your custom class 5")
+
+    print("\n✓ Use cases:")
+    print("   - Medical image classification (normal, disease1, disease2)")
+    print("   - Quality control (good, defect_type1, defect_type2)")
+    print("   - Custom object detection (apple, orange, banana)")
+    print("   - Document classification (invoice, receipt, contract)")
+
+    return model
+
+
 def training_example():
     """
     Example of how you would train the model with new classes.
@@ -154,10 +202,18 @@ def training_example():
 
     print("Training setup:")
     print("1. Prepare your dataset with new classes")
+    print("   Option A - Extended classes:")
     print("   - Class 0-999: ImageNet classes")
     print("   - Class 1000: Your new class 1")
     print("   - Class 1001: Your new class 2")
     print("   - Class 1002: Your new class 3")
+    print("   ")
+    print("   Option B - New classes only (from approach 4):")
+    print("   - Class 0: Your custom class 1")
+    print("   - Class 1: Your custom class 2")
+    print("   - Class 2: Your custom class 3")
+    print("   - Class 3: Your custom class 4")
+    print("   - Class 4: Your custom class 5")
 
     print("\n2. Create data loaders:")
     print("   train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)")
@@ -227,6 +283,7 @@ def main():
         model1 = approach_1_simple_extension()
         model2 = approach_2_lora_extension()
         model3 = approach_3_dual_heads()
+        model4 = approach_4_new_classes_only()
 
         # Show training example
         training_model = training_example()
@@ -237,15 +294,17 @@ def main():
         print("\n" + "=" * 60)
         print("SUMMARY")
         print("=" * 60)
-        print("✓ Three approaches demonstrated:")
+        print("✓ Four approaches demonstrated:")
         print("  1. Simple Extension: Replace classifier, copy weights")
         print("  2. LoRA Extension: Parameter-efficient fine-tuning")
         print("  3. Dual Heads: Separate heads for original vs new classes")
+        print("  4. New Classes Only: Discard ImageNet, custom classes only")
 
         print("\n✓ Key considerations:")
         print("  - Dataset size: Small→freeze backbone, Large→fine-tune all")
         print("  - Computational resources: Limited→use LoRA")
         print("  - Class relationships: Related→simple extension, Unrelated→dual heads")
+        print("  - Task specificity: Custom domain→new classes only")
 
         print("\n✓ Next steps:")
         print("  1. Prepare your dataset with proper class labels")

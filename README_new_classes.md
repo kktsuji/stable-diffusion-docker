@@ -2,7 +2,7 @@
 
 ## Overview
 
-Yes, you can definitely add new classes to a pretrained ResNet model! This repository demonstrates three different approaches for extending pretrained ResNet models with additional classes while leveraging transfer learning.
+Yes, you can definitely add new classes to a pretrained ResNet model! This repository demonstrates four different approaches for extending pretrained ResNet models with additional classes while leveraging transfer learning.
 
 ## Approaches
 
@@ -61,6 +61,32 @@ Yes, you can definitely add new classes to a pretrained ResNet model! This repos
 - More complex architecture
 - Requires careful handling of the dual outputs
 
+### 4. New Classes Only (`approach_4_new_classes_only`)
+**Best for:** Specific tasks where ImageNet classes are not needed
+
+**How it works:**
+- Completely replaces the classifier with one for custom classes only
+- Discards all ImageNet classes (0-999)
+- Creates a much smaller and more efficient model
+- Maps your classes directly to indices 0, 1, 2, etc.
+
+**Pros:**
+- Extremely efficient and lightweight
+- Fast inference and training
+- Clean class mapping (no need to handle ImageNet indices)
+- Perfect for domain-specific applications
+- Much smaller model size
+
+**Cons:**
+- Cannot classify original ImageNet classes
+- Less versatile than other approaches
+
+**Use Cases:**
+- Medical image classification (normal, disease1, disease2)
+- Quality control (good, defect_type1, defect_type2)
+- Custom object detection (apple, orange, banana)
+- Document classification (invoice, receipt, contract)
+
 ## File Structure
 
 ```
@@ -105,6 +131,28 @@ lora_model = ResNetWithNewClasses(
 optimizer = lora_model.get_optimizer(learning_rate=1e-4)
 ```
 
+### New Classes Only Approach
+```python
+# For domain-specific tasks where ImageNet classes aren't needed
+new_only_model = ResNetWithNewClasses(
+    base_model_name="resnet50",
+    original_num_classes=1000,
+    new_num_classes=None,  # Don't extend in init
+    use_lora=False,
+)
+
+# Replace classifier to handle only 5 custom classes
+new_only_model.new_classes_only(num_new_classes=5)
+new_only_model.freeze_backbone(freeze=True)
+
+# Your classes are now mapped as:
+# Class 0: Your custom class 1
+# Class 1: Your custom class 2
+# Class 2: Your custom class 3
+# Class 3: Your custom class 4
+# Class 4: Your custom class 5
+```
+
 ### Training Loop
 ```python
 import torch.nn as nn
@@ -128,13 +176,17 @@ model.save_model("path/to/your/extended_model.pth")
 
 ### Prediction
 ```python
-# Define your class names
+# For extended classes (approaches 1-3)
 class_names = []
 class_names.extend([f"imagenet_class_{i}" for i in range(1000)])  # Original classes
 class_names.extend(["my_new_class_1", "my_new_class_2", "my_new_class_3"])  # New classes
 
-# Predict
 result = model.predict("path/to/image.jpg", class_names)
+print(f"Predicted: {result['predicted_class_name']} (confidence: {result['confidence']:.3f})")
+
+# For new classes only (approach 4)
+custom_class_names = ["apple", "orange", "banana", "grape", "strawberry"]
+result = new_only_model.predict("path/to/image.jpg", custom_class_names)
 print(f"Predicted: {result['predicted_class_name']} (confidence: {result['confidence']:.3f})")
 ```
 
@@ -154,6 +206,13 @@ print(f"Predicted: {result['predicted_class_name']} (confidence: {result['confid
 - **Related to ImageNet classes:** Simple extension works well
 - **Very different from ImageNet:** Consider dual heads or domain adaptation
 - **Mix of related and unrelated:** Dual heads approach
+- **Completely unrelated/domain-specific:** New classes only approach
+
+### Task Requirements
+- **Need ImageNet classes:** Use approaches 1, 2, or 3
+- **Only custom classes needed:** Use approach 4 (new classes only)
+- **Want maximum efficiency:** Use approach 4 for smallest model size
+- **Need flexibility:** Use dual heads to switch between different classification modes
 
 ## Installation
 
