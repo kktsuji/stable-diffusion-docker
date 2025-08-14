@@ -59,8 +59,13 @@ def approach_4_new_classes_only():
 
 def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
     try:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Using device: {device}")
+
         # Demonstrate different approaches
         model = approach_4_new_classes_only()
+        model.model.to(device)
+        print(f"Model moved to {device}")
 
         # Show training example
         transform = transforms.Compose(
