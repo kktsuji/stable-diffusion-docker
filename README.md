@@ -33,4 +33,6 @@ Execute the python script on the container with GPU.
 docker run --rm -it --gpus all --network=host -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python train_lora.py
 docker run --rm -it --gpus all --network=host -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python generate_images.py
 docker run --rm -it --gpus all --network=host -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python identify_resnet.py ./data
+
+docker run --rm -it --gpus all --network=host -v $PWD:/work -w /work kktsuji/stable-diffusion-cuda12.8.0 ./venv/bin/python load_data.py
 ```
