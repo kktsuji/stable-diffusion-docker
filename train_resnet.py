@@ -120,3 +120,12 @@ def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
         print(
             "To run this code, ensure you have: torch, torchvision, timm, peft installed"
         )
+
+
+if __name__ == "__main__":
+    train_resnet(
+        train_data_path="./data/train",
+        val_data_path="./data/train",
+        num_epochs=10,
+        model_out_path="./models/resnet50_epochs10.pth",
+    )

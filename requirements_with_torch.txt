@@ -1,5 +1,7 @@
-diffusers
+pytorch
 torchvision
+torchaudio
+diffusers
 transformers
 accelerate
 huggingface_hub

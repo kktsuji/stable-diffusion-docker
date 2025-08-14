@@ -1,0 +1,10 @@
+diffusers
+transformers
+accelerate
+huggingface_hub
+hf_xet
+peft
+datasets
+matplotlib
+timm
+Pillow
