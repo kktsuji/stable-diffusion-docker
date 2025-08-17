@@ -3,6 +3,7 @@ from add_new_class_lora_resnet import ResNetWithNewClasses
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
@@ -35,7 +36,7 @@ def approach_4_new_classes_only():
     model.freeze_backbone(freeze=True)
 
     # Get optimizer
-    optimizer = model.get_optimizer(learning_rate=1e-3)
+    # optimizer = model.get_optimizer(learning_rate=1e-3)
 
     print("✓ New classes only model ready!")
     print(f"✓ Original ImageNet classes: DISCARDED")
@@ -98,21 +99,28 @@ def train_resnet(
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-        print("=== DataLoader Details ===")
+        print("\n=== DataLoader Details ===")
         print(f"Train loader batch size: {train_loader.batch_size}")
         print(f"Train loader shuffle: {train_loader.sampler}")
         print(f"Train dataset size: {len(train_dataset)}")
         print(f"Train dataset classes: {train_dataset.classes}")
         print(f"Number of batches: {len(train_loader)}")
 
-        print("\n=== Images per Class ===")
+        print("\n=== Images per Class in Training Data ===")
         label_counts = collections.Counter(train_dataset.targets)
         for class_idx, count in label_counts.items():
             class_name = train_dataset.classes[class_idx]
             print(f"Class {class_idx} ({class_name}): {count} images")
 
         print("\n3. Training loop:")
-        optimizer = model.get_optimizer(learning_rate=1e-3)
+        # optimizer = model.get_optimizer(learning_rate=1e-4)
+        optimizer = torch.optim.AdamW(model.model.parameters(), lr=1e-4)
+        scheduler = lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=0.5, patience=3, verbose=True
+        )
+        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        #     optimizer, patience=3, factor=0.5
+        # )
         criterion = nn.CrossEntropyLoss()
 
         for epoch in range(num_epochs):
@@ -122,6 +130,11 @@ def train_resnet(
             val_loss, val_acc = model.validate(
                 val_loader, criterion, class_names=train_dataset.classes
             )
+
+            # Learning rate scheduling - THIS IS THE KEY PART
+            scheduler.step(val_loss)  # Pass validation loss to scheduler
+            current_lr = optimizer.param_groups[0]["lr"]
+            print(f"Current Learning Rate: {current_lr:.2e}\n")
 
         print("\n4. Save the model:")
         model.save_model(model_out_path)
@@ -143,7 +156,7 @@ if __name__ == "__main__":
     train_resnet(
         train_data_path="./data/train",
         val_data_path="./data/val",
-        num_epochs=30,
+        num_epochs=20,
         batch_size=16,
         model_out_path="./models/resnet50_epochs10.pth",
     )
