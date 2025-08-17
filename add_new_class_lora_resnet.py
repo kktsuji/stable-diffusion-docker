@@ -408,7 +408,6 @@ class ResNetWithNewClasses:
                 )
                 print(f"    - {class_name:20} | No samples in validation set")
 
-        print()
         return avg_loss, accuracy
 
     def predict(self, image_path, class_names=None):
