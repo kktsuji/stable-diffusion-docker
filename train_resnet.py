@@ -57,7 +57,9 @@ def approach_4_new_classes_only():
     return model
 
 
-def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
+def train_resnet(
+    train_data_path, val_data_path, num_epochs, batch_size, model_out_path
+):
     try:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Using device: {device}")
@@ -68,17 +70,33 @@ def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
         print(f"Model moved to {device}")
 
         # Show training example
-        transform = transforms.Compose(
+        transform_train = transforms.Compose(
             [
                 transforms.Resize((224, 224)),
+                # transforms.RandomHorizontalFlip(p=0.5),
+                # transforms.RandomRotation(degrees=15),
+                # transforms.ColorJitter(brightness=0.2, contrast=0.2),
                 transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
             ]
         )
 
-        train_dataset = datasets.ImageFolder(train_data_path, transform=transform)
-        val_dataset = datasets.ImageFolder(val_data_path, transform=transform)
-        train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+        transform_val = transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+
+        train_dataset = datasets.ImageFolder(train_data_path, transform=transform_train)
+        val_dataset = datasets.ImageFolder(val_data_path, transform=transform_val)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
         print("=== DataLoader Details ===")
         print(f"Train loader batch size: {train_loader.batch_size}")
@@ -101,7 +119,9 @@ def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
             train_loss, train_acc = model.train_step(
                 train_loader, optimizer, criterion, epoch
             )
-            val_loss, val_acc = model.validate(val_loader, criterion)
+            val_loss, val_acc = model.validate(
+                val_loader, criterion, class_names=train_dataset.classes
+            )
 
         print("\n4. Save the model:")
         model.save_model(model_out_path)
@@ -121,8 +141,9 @@ def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
 
 if __name__ == "__main__":
     train_resnet(
-        train_data_path="./data/val",
+        train_data_path="./data/train",
         val_data_path="./data/val",
-        num_epochs=50,
+        num_epochs=30,
+        batch_size=16,
         model_out_path="./models/resnet50_epochs10.pth",
     )

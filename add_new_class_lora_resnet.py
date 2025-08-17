@@ -326,18 +326,37 @@ class ResNetWithNewClasses:
 
         return avg_loss, accuracy
 
-    def validate(self, dataloader, criterion):
+    def validate(self, dataloader, criterion, class_names=None):
         """
         Validation step.
 
         Args:
             dataloader: Validation data loader
             criterion: Loss function
+            class_names: List of class names for detailed reporting
         """
         self.model.eval()
         running_loss = 0.0
         correct = 0
         total = 0
+
+        # Initialize per-class metrics
+        # num_classes = (
+        #     self.new_num_classes if self.new_num_classes else self.original_num_classes
+        # )
+        # Get the feature dimension
+        if hasattr(self.model, "fc"):
+            num_classes = self.model.fc.out_features
+        elif hasattr(self.model, "classifier"):
+            num_classes = self.model.classifier.out_features
+        elif hasattr(self.model, "head"):
+            num_classes = self.model.head.out_features
+        else:
+            raise ValueError("Could not find classifier layer")
+
+        class_correct = torch.zeros(num_classes)
+        class_total = torch.zeros(num_classes)
+        class_losses = torch.zeros(num_classes)
 
         with torch.no_grad():
             for data, targets in dataloader:
@@ -350,10 +369,46 @@ class ResNetWithNewClasses:
                 total += targets.size(0)
                 correct += (predicted == targets).sum().item()
 
+                # Calculate per-class metrics
+                for i in range(targets.size(0)):
+                    label = targets[i]
+                    class_total[label] += 1
+                    if predicted[i] == label:
+                        class_correct[label] += 1
+
+                    # Calculate individual sample loss for this class
+                    individual_loss = criterion(outputs[i : i + 1], targets[i : i + 1])
+                    class_losses[label] += individual_loss.item()
+
+        # Overall metrics
         accuracy = 100.0 * correct / total
         avg_loss = running_loss / len(dataloader)
-        print(f"Validation Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%\n")
 
+        print(f"  - Overall Validation Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%")
+        print("  - Per-Class Validation Results:")
+
+        # Per-class metrics
+        for i in range(num_classes):
+            if class_total[i] > 0:
+                class_acc = 100.0 * class_correct[i] / class_total[i]
+                class_avg_loss = class_losses[i] / class_total[i]
+                class_name = (
+                    class_names[i]
+                    if class_names and i < len(class_names)
+                    else f"Class {i}"
+                )
+                print(
+                    f"    - {class_name:20} | Loss: {class_avg_loss:.4f} | Accuracy: {class_acc:6.2f}% | Samples: {int(class_total[i]):4d}"
+                )
+            else:
+                class_name = (
+                    class_names[i]
+                    if class_names and i < len(class_names)
+                    else f"Class {i}"
+                )
+                print(f"    - {class_name:20} | No samples in validation set")
+
+        print()
         return avg_loss, accuracy
 
     def predict(self, image_path, class_names=None):
