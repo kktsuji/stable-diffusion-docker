@@ -95,11 +95,8 @@ def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
 
         print("\n3. Training loop:")
         optimizer = model.get_optimizer(learning_rate=1e-3)
-        print("get optimizer")
         criterion = nn.CrossEntropyLoss()
-        print("get criterion")
 
-        print("Start epochs")
         for epoch in range(num_epochs):
             train_loss, train_acc = model.train_step(
                 train_loader, optimizer, criterion, epoch
@@ -124,8 +121,8 @@ def train_resnet(train_data_path, val_data_path, num_epochs, model_out_path):
 
 if __name__ == "__main__":
     train_resnet(
-        train_data_path="./data/train",
-        val_data_path="./data/train",
-        num_epochs=10,
+        train_data_path="./data/val",
+        val_data_path="./data/val",
+        num_epochs=50,
         model_out_path="./models/resnet50_epochs10.pth",
     )

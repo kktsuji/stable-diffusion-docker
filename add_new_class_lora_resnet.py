@@ -352,7 +352,7 @@ class ResNetWithNewClasses:
 
         accuracy = 100.0 * correct / total
         avg_loss = running_loss / len(dataloader)
-        print(f"Validation Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%")
+        print(f"Validation Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%\n")
 
         return avg_loss, accuracy
 
